@@ -1,0 +1,21 @@
+[package]
+name = "oxicode_compatibility"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+repository.workspace = true
+license.workspace = true
+rust-version.workspace = true
+
+description = "Compatibility tests for oxicode"
+keywords = ["binary", "compatibility", "testing"]
+categories = ["encoding", "development-tools::testing"]
+
+publish = false
+
+[dependencies]
+oxicode = { path = "..", version = "0.1.0" }
+serde = { workspace = true, features = ["derive"] }
+bincode = "2.0"
+
+[dev-dependencies]
