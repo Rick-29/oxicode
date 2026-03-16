@@ -95,7 +95,7 @@ For detailed documentation, see the [OxiCode crate documentation](https://docs.r
 
 ## License
 
-This project is licensed under the Apache License, Version 2.0 - see the [LICENSE](../LICENSE.md) file for details.
+This project is licensed under the Apache License, Version 2.0 - see the [LICENSE](../LICENSE) file for details.
 
 ## Contributing
 

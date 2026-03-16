@@ -4,7 +4,30 @@
 
 This TODO list tracks the development of oxicode, the successor to bincode.
 
-**Last Updated**: 2026-03-16 (version 0.2.0) — comprehensive quality pass
+**Last Updated**: 2026-03-16 (version 0.2.1)
+
+---
+
+## Version 0.2.1 Accomplishments (2026-03-16) ✓
+
+### Pure Rust Compression Migration
+- [x] **oxiarc-lz4**: Replaced `lz4_flex` with `oxiarc-lz4` (pure Rust) for LZ4 compression
+- [x] **oxiarc-zstd**: Replaced `zstd` (C FFI) with `oxiarc-zstd` (pure Rust) for Zstd compression/decompression
+- [x] **LZ4 frame format**: LZ4 compression now uses frame format instead of block format with prepended size
+- [x] **Decompression bomb protection**: Added `MAX_DECOMPRESSED_SIZE` (256 MB) safety limit for LZ4 decompression
+
+### Removed
+- [x] **compression-zstd-pure feature**: Removed (no longer needed; `compression-zstd` is pure Rust)
+- [x] **ruzstd dependency**: Removed
+- [x] **lz4_flex dependency**: Removed
+- [x] **zstd (C FFI) dependency**: Removed
+- [x] **ruzstd_impl.rs module**: Removed
+
+### Quality
+- [x] **100% Pure Rust**: All compression backends are now pure Rust (COOLJAPAN Pure Rust Policy)
+- [x] **No C/Fortran toolchain required**: For any feature
+- [x] **MSRV**: Updated to 1.74.0
+- [x] **Dev dependency upgrades**: criterion 0.8.2, proptest 1.10
 
 ---
 

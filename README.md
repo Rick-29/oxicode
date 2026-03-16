@@ -78,8 +78,7 @@ serde = []                             # Serde integration (optional)
 simd = []                              # SIMD-accelerated array encoding
 checksum = []                          # CRC32 integrity checking
 compression-lz4 = []                   # LZ4 compression (pure Rust, fast)
-compression-zstd = []                  # Zstd compression (requires C toolchain)
-compression-zstd-pure = []             # Pure Rust zstd decompression
+compression-zstd = []                  # Zstd compression (pure Rust via oxiarc-zstd)
 async-tokio = ["tokio"]               # Async streaming with Tokio
 ```
 
@@ -472,14 +471,14 @@ OxiCode is the spiritual successor to bincode. In **legacy mode** (`config::lega
 
 ## Project Status
 
-**🎯 Version 0.2.0 - Production Ready**
+**Version 0.2.1 - Production Ready**
 
 All core features and enhancements complete. See [CHANGELOG.md](CHANGELOG.md) for details.
 
 **Statistics** (as of 2026-03-16):
-- **Lines of Code**: 513,228 (Rust source lines across 974 files)
-- **Files**: 974 Rust files
-- **Test Coverage**: 19,929 tests passing (100% pass rate, 0 skipped)
+- **Lines of Code**: 513,128 (Rust source lines across 973 files)
+- **Files**: 973 Rust files
+- **Test Coverage**: 19,927 tests passing (100% pass rate, 0 skipped)
   - 18 binary compatibility tests (100% byte-for-byte identical to bincode)
   - 19,911+ feature, integration, property-based, and stress tests
 - **Type Coverage**: 120+ types with full Encode/Decode support
@@ -600,7 +599,7 @@ Your sponsorship helps us:
 
 ## License
 
-Licensed under the Apache License, Version 2.0. See [LICENSE](LICENSE.md) for details.
+Licensed under the Apache License, Version 2.0. See [LICENSE](LICENSE) for details.
 
 ## Acknowledgments
 

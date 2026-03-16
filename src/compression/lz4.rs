@@ -1,4 +1,4 @@
-//! LZ4 compression implementation.
+//! LZ4 compression implementation using oxiarc-lz4 (pure Rust).
 //!
 //! LZ4 is an extremely fast compression algorithm with good compression ratios.
 //! It's ideal for real-time applications where decompression speed is critical.
@@ -10,16 +10,22 @@ use crate::{Error, Result};
 #[cfg(feature = "alloc")]
 extern crate alloc;
 
-/// Compress data using LZ4.
+/// Default maximum decompression output size (256 MB).
+/// This prevents decompression bombs from consuming excessive memory.
+const MAX_DECOMPRESSED_SIZE: usize = 256 * 1024 * 1024;
+
+/// Compress data using LZ4 frame format.
 #[cfg(feature = "alloc")]
 pub fn compress(data: &[u8]) -> Result<alloc::vec::Vec<u8>> {
-    Ok(lz4_flex::compress_prepend_size(data))
+    oxiarc_lz4::compress(data).map_err(|_| Error::Custom {
+        message: "LZ4 compression error",
+    })
 }
 
-/// Decompress LZ4-compressed data.
+/// Decompress LZ4-compressed data (frame format).
 #[cfg(feature = "alloc")]
 pub fn decompress(data: &[u8]) -> Result<alloc::vec::Vec<u8>> {
-    lz4_flex::decompress_size_prepended(data).map_err(|_| Error::InvalidData {
+    oxiarc_lz4::decompress(data, MAX_DECOMPRESSED_SIZE).map_err(|_| Error::InvalidData {
         message: "LZ4 decompression error",
     })
 }
@@ -27,52 +33,29 @@ pub fn decompress(data: &[u8]) -> Result<alloc::vec::Vec<u8>> {
 /// Compress data into a pre-allocated buffer.
 /// Returns the number of bytes written.
 #[allow(dead_code)]
+#[cfg(feature = "alloc")]
 pub fn compress_into(src: &[u8], dst: &mut [u8]) -> Result<usize> {
-    // lz4_flex requires prepending the size, so we do it manually
-    if dst.len() < 4 {
+    let compressed = oxiarc_lz4::compress(src).map_err(|_| Error::Custom {
+        message: "LZ4 compression failed",
+    })?;
+
+    if dst.len() < compressed.len() {
         return Err(Error::UnexpectedEnd {
-            additional: 4 - dst.len(),
+            additional: compressed.len() - dst.len(),
         });
     }
 
-    let size_bytes = (src.len() as u32).to_le_bytes();
-    dst[..4].copy_from_slice(&size_bytes);
-
-    let max_compressed = lz4_flex::block::get_maximum_output_size(src.len());
-    if dst.len() < 4 + max_compressed {
-        // Try compression and see if it fits
-        #[cfg(feature = "alloc")]
-        {
-            let compressed = lz4_flex::compress(src);
-            if dst.len() < 4 + compressed.len() {
-                return Err(Error::UnexpectedEnd {
-                    additional: 4 + compressed.len() - dst.len(),
-                });
-            }
-            dst[4..4 + compressed.len()].copy_from_slice(&compressed);
-            return Ok(4 + compressed.len());
-        }
-        #[cfg(not(feature = "alloc"))]
-        {
-            return Err(Error::UnexpectedEnd {
-                additional: 4 + max_compressed - dst.len(),
-            });
-        }
-    }
-
-    let compressed_size =
-        lz4_flex::compress_into(src, &mut dst[4..]).map_err(|_| Error::Custom {
-            message: "LZ4 compression failed",
-        })?;
-
-    Ok(4 + compressed_size)
+    dst[..compressed.len()].copy_from_slice(&compressed);
+    Ok(compressed.len())
 }
 
 /// Get the maximum compressed size for a given input size.
+/// LZ4 worst case is approximately input_size + (input_size / 255) + 16 + frame overhead.
 #[allow(dead_code)]
 pub fn max_compressed_size(input_size: usize) -> usize {
-    // 4 bytes for size prefix + maximum compressed size
-    4 + lz4_flex::block::get_maximum_output_size(input_size)
+    // LZ4 frame overhead (header + end mark + optional checksum) + worst-case block expansion
+    // Conservative estimate matching LZ4 spec
+    input_size + (input_size / 255) + 32
 }
 
 #[cfg(test)]

@@ -357,19 +357,3 @@ mod zstd_tests {
         );
     }
 }
-
-#[cfg(all(feature = "compression-zstd-pure", not(feature = "compression-zstd")))]
-mod zstd_pure_decompression_tests {
-    use oxicode::compression::{decompress, is_compressed};
-
-    #[test]
-    fn test_zstd_pure_module_is_accessible() {
-        // When only compression-zstd-pure is enabled (no C zstd), the decompress
-        // function is still callable but compression is not supported. We verify
-        // that a buffer without a valid header returns an error gracefully.
-        let garbage = vec![0xAAu8, 0xBB, 0xCC, 0xDD, 0xEE];
-        assert!(!is_compressed(&garbage));
-        let result = decompress(&garbage);
-        assert!(result.is_err());
-    }
-}

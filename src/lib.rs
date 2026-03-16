@@ -80,11 +80,7 @@ mod features;
 pub mod simd;
 
 // Compression support
-#[cfg(any(
-    feature = "compression-lz4",
-    feature = "compression-zstd",
-    feature = "compression-zstd-pure"
-))]
+#[cfg(any(feature = "compression-lz4", feature = "compression-zstd"))]
 pub mod compression;
 
 // Schema versioning support

@@ -5,6 +5,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.1] - 2026-03-16
+
+### Changed
+- Replaced `lz4_flex` with `oxiarc-lz4` (pure Rust) for LZ4 compression
+- Replaced `zstd` (C FFI) with `oxiarc-zstd` (pure Rust) for Zstd compression/decompression
+- Removed `compression-zstd-pure` feature and `ruzstd` dependency; `compression-zstd` is now fully pure Rust via `oxiarc-zstd`
+- LZ4 compression now uses frame format instead of block format with prepended size
+- Added `MAX_DECOMPRESSED_SIZE` (256 MB) safety limit for LZ4 decompression to prevent decompression bombs
+- Upgraded `criterion` dev-dependency from 0.8.1 to 0.8.2
+- Upgraded `proptest` dev-dependency from 1.8 to 1.10
+- Updated MSRV to 1.74.0
+
+### Removed
+- `compression-zstd-pure` feature flag (no longer needed; `compression-zstd` is pure Rust)
+- `ruzstd` dependency
+- `lz4_flex` dependency
+- `zstd` (C FFI) dependency
+- `src/compression/ruzstd_impl.rs` module
+
+### Quality
+- All compression backends are now 100% pure Rust (COOLJAPAN Pure Rust Policy)
+- No C/Fortran toolchain required for any feature
+
 ## [0.2.0] - 2026-03-16
 
 ### Added
@@ -266,5 +289,6 @@ See [MIGRATION.md](MIGRATION.md) for detailed migration guide.
 
 ---
 
+[0.2.1]: https://github.com/cool-japan/oxicode/releases/tag/v0.2.1
 [0.2.0]: https://github.com/cool-japan/oxicode/releases/tag/v0.2.0
 [0.1.0]: https://github.com/cool-japan/oxicode/releases/tag/v0.1.0

@@ -3,7 +3,7 @@ members = ["derive", "compatibility"]
 resolver = "2"
 
 [workspace.package]
-version = "0.2.0"
+version = "0.2.1"
 authors = ["COOLJAPAN OU (Team Kitasan)"]
 edition = "2021"
 rust-version = "1.74.0"
@@ -23,10 +23,10 @@ serde = { version = "1.0", default-features = false }
 crc32fast = { version = "1.5" }
 
 # Dev dependencies
-criterion = "0.8.1"
+criterion = "0.8.2"
 tempfile = "3.27"
 serde_json = { version = "1.0", default-features = false }
-proptest = "1.8"
+proptest = "1.10"
 
 [package]
 name = "oxicode"
@@ -51,9 +51,8 @@ alloc = ["serde?/alloc"]
 derive = ["oxicode_derive"]
 serde = ["dep:serde", "alloc"]  # Serde integration (optional)
 simd = []  # SIMD-optimized array encoding (auto-detects CPU capabilities)
-compression-lz4 = ["lz4_flex"]  # LZ4 compression (fast, default)
-compression-zstd = ["zstd"]    # Zstd compression (better ratio)
-compression-zstd-pure = ["ruzstd"]  # Pure Rust zstd decompression (decode-only, no C toolchain)
+compression-lz4 = ["oxiarc-lz4"]  # LZ4 compression (fast, pure Rust)
+compression-zstd = ["oxiarc-zstd"]    # Zstd compression (better ratio, pure Rust)
 compression = ["compression-lz4"]  # Default compression feature
 async-tokio = ["tokio"]  # Async streaming with tokio
 checksum = ["dep:crc32fast"]  # CRC32 integrity checking for encoded data
@@ -61,11 +60,10 @@ validation = []               # Enable validation trait implementations in tests
 versioning = []               # Enable versioning API tests
 
 [dependencies]
-oxicode_derive = { path = "derive", version = "0.2.0", optional = true }
+oxicode_derive = { path = "derive", version = "0.2.1", optional = true }
 serde = { workspace = true, optional = true, features = ["alloc"] }
-lz4_flex = { version = "0.12", optional = true }
-zstd = { version = "0.13", optional = true, default-features = false }
-ruzstd = { version = "0.8", optional = true }
+oxiarc-lz4 = { version = "0.2.4", optional = true }
+oxiarc-zstd = { version = "0.2.4", optional = true }
 tokio = { version = "1.50", features = ["io-util"], optional = true }
 crc32fast = { workspace = true, optional = true }
 

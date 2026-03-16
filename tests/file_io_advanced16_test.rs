@@ -343,7 +343,7 @@ fn test_audio_clip_empty_frames_roundtrip() {
 }
 
 #[test]
-fn test_audio_clip_large_many_frames_roundtrip() {
+fn test_audio_clip_large_many_frames_roundtrip() -> std::result::Result<(), Box<dyn std::error::Error>> {
     let frames: Vec<AudioFrame> = (0..20).map(|i| stereo_frame(i, 512)).collect();
     let clip = AudioClip {
         config: AudioConfig {
@@ -356,13 +356,16 @@ fn test_audio_clip_large_many_frames_roundtrip() {
         duration_ms: frames.len() as f64 * (512.0 / 44100.0) * 1000.0,
         frames,
     };
-    let path = std::env::temp_dir().join("oxi_dsp16_clip_large_many_frames.bin");
-    encode_to_file(&clip, &path).expect("encode AudioClip large many frames");
-    let decoded: AudioClip = decode_from_file(&path).expect("decode AudioClip large many frames");
+    let tmp = std::env::temp_dir();
+    std::fs::create_dir_all(&tmp)?;
+    let path = tmp.join("oxi_dsp16_clip_large_many_frames.bin");
+    encode_to_file(&clip, &path)?;
+    let decoded: AudioClip = decode_from_file(&path)?;
     assert_eq!(clip.frames.len(), decoded.frames.len());
     assert_eq!(clip.name, decoded.name);
     assert!((clip.duration_ms - decoded.duration_ms).abs() < 1e-9);
-    std::fs::remove_file(&path).expect("cleanup AudioClip large many frames");
+    std::fs::remove_file(&path)?;
+    Ok(())
 }
 
 #[test]

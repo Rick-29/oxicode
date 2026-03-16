@@ -1,4 +1,4 @@
-//! Zstd compression implementation.
+//! Zstd compression implementation using oxiarc-zstd (pure Rust).
 //!
 //! Zstd (Zstandard) offers excellent compression ratios with still fast performance.
 //! It's ideal for storage and network transmission where better compression is valuable.
@@ -7,6 +7,7 @@
 //! - Compression levels 1-22 (default: 3)
 //! - Fast decompression (~1 GB/s)
 //! - Better ratio than LZ4 (typically 2-3x smaller)
+//! - Pure Rust implementation (no C toolchain required)
 
 use crate::{Error, Result};
 
@@ -23,33 +24,17 @@ pub fn compress(data: &[u8], level: i32) -> Result<alloc::vec::Vec<u8>> {
     // Clamp level to valid range (1-22)
     let level = level.clamp(1, 22);
 
-    zstd::bulk::compress(data, level).map_err(|e| Error::Custom {
-        message: if e.to_string().contains("memory") {
-            "Zstd compression: out of memory"
-        } else {
-            "Zstd compression error"
-        },
+    oxiarc_zstd::compress_with_level(data, level).map_err(|_| Error::Custom {
+        message: "Zstd compression error",
     })
 }
 
 /// Decompress Zstd-compressed data.
 #[cfg(feature = "alloc")]
 pub fn decompress(data: &[u8]) -> Result<alloc::vec::Vec<u8>> {
-    // Use streaming decoder which handles variable-size output better
-    use std::io::Read;
-
-    let mut decoder = zstd::Decoder::new(data).map_err(|_| Error::InvalidData {
-        message: "Zstd: failed to create decoder",
-    })?;
-
-    let mut output = alloc::vec::Vec::new();
-    decoder
-        .read_to_end(&mut output)
-        .map_err(|_| Error::InvalidData {
-            message: "Zstd decompression error",
-        })?;
-
-    Ok(output)
+    oxiarc_zstd::decompress(data).map_err(|_| Error::InvalidData {
+        message: "Zstd decompression error",
+    })
 }
 
 /// Compress data with default level.

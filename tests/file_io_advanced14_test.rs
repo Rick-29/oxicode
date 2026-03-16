@@ -474,7 +474,7 @@ fn test_multiple_files_parallel_persist() {
     ];
 
     let paths: Vec<_> = (17..=19)
-        .map(|i| temp_dir().join(format!("oxicode_fileio14_test{i}.bin")))
+        .map(|i| temp_dir().join(format!("oxicode_fileio14_parallel{i}.bin")))
         .collect();
 
     for (user, path) in users.iter().zip(paths.iter()) {

@@ -1777,11 +1777,7 @@ fn test_decode_versioned_then_reencode_different_version() {
 /// in a versioned envelope.  The pipeline must round-trip correctly.
 /// Uses only the always-available `Compression::None` variant so the test
 /// runs even when no compression feature flags are enabled.
-#[cfg(any(
-    feature = "compression-lz4",
-    feature = "compression-zstd",
-    feature = "compression-zstd-pure"
-))]
+#[cfg(any(feature = "compression-lz4", feature = "compression-zstd"))]
 #[test]
 fn test_versioned_with_compression_none() {
     use oxicode::compression::{compress, decompress, Compression};

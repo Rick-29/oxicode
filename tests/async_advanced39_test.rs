@@ -348,7 +348,7 @@ fn test_nn39_batch_10_metrics_write_all_read_all() {
         let (writer, reader) = tokio::io::duplex(65536);
         let mut encoder = AsyncEncoder::with_config(writer, StreamingConfig::default());
         encoder
-            .write_all(metrics.clone().into_iter())
+            .write_all(metrics.clone())
             .await
             .expect("write_all failed");
         encoder.finish().await.expect("finish failed");
@@ -458,7 +458,7 @@ fn test_nn39_progress_tracking() {
         let (writer, reader) = tokio::io::duplex(65536);
         let mut encoder = AsyncEncoder::with_config(writer, StreamingConfig::default());
         encoder
-            .write_all(metrics.clone().into_iter())
+            .write_all(metrics.clone())
             .await
             .expect("write_all progress test failed");
         encoder.finish().await.expect("finish progress test failed");
@@ -785,7 +785,7 @@ fn test_nn39_learning_rate_decay_sequence() {
         let (writer, reader) = tokio::io::duplex(65536);
         let mut encoder = AsyncEncoder::with_config(writer, StreamingConfig::default());
         encoder
-            .write_all(metrics.clone().into_iter())
+            .write_all(metrics.clone())
             .await
             .expect("write lr decay sequence failed");
         encoder
