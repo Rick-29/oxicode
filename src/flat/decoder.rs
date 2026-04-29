@@ -30,14 +30,17 @@ impl<R: Read + Seek, const ITEM_SIZE: usize, C: Config> FlatDecoder<R, ITEM_SIZE
     /// Returns `Ok(None)` on EOF. Partial trailing records are reported as an
     /// error because the stream length must be a multiple of `ITEM_SIZE`.
     pub fn read_item<T: Decode>(&mut self) -> Result<Option<T>, Error> {
-        let mut buf = vec![0u8; ITEM_SIZE];
-        let count = self.reader.read(&mut buf)?;
-        if count == 0 {
-            return Ok(None); // EOF
-        } else if count < ITEM_SIZE {
-            let msg = format!("Unexpected end of file: read {} bytes, expected {}", count, ITEM_SIZE);
-            return Err(Error::OwnedCustom { message: msg });
+        let mut buf = [0u8; ITEM_SIZE];  // stack array, not Vec
+    
+        // Peek first byte to distinguish EOF from mid-stream error
+        match self.reader.read(&mut buf[..1])? {
+            0 => return Ok(None),  // clean EOF
+            _ => {}
         }
+    
+        // Fill the rest — read_exact guarantees all ITEM_SIZE bytes or errors
+        self.reader.read_exact(&mut buf[1..])?;
+    
         let (item, _) = crate::decode_from_slice_with_config(&buf, self.config)?;
         Ok(Some(item))
     }
@@ -45,14 +48,13 @@ impl<R: Read + Seek, const ITEM_SIZE: usize, C: Config> FlatDecoder<R, ITEM_SIZE
     /// Read and decode all remaining fixed-size items.
     pub fn read_all<T: Decode>(&mut self) -> Result<Vec<T>, Error> {
         let mut items = Vec::new();
-        let mut buf = vec![0u8; ITEM_SIZE];
-        while let Ok(amount) = self.reader.read(&mut buf) {
-            if amount == 0 {
-                break; // EOF
-            } else if amount < ITEM_SIZE {
-                let msg = format!("Unexpected end of file: read {} bytes, expected {}", amount, ITEM_SIZE);
-                return Err(Error::OwnedCustom { message: msg });
+        loop {
+            let mut buf = [0u8; ITEM_SIZE];
+            match self.reader.read(&mut buf[..1])? {
+                0 => break,
+                _ => {}
             }
+            self.reader.read_exact(&mut buf[1..])?;
             let (item, _) = crate::decode_from_slice_with_config(&buf, self.config)?;
             items.push(item);
         }
@@ -72,7 +74,9 @@ impl<R: Read + Seek, const ITEM_SIZE: usize, C: Config> FlatDecoder<R, ITEM_SIZE
         Ok(self.reader.seek(from)?)
     }
 
-    /// To not get errors
+    /// Since all the Items have the same lenght, we can seek to the position of the item and read it directly.
+    /// This is more efficient than reading all the items up to the desired index.
+    /// Note that this method does not check if the index is out of bounds, so it may return an error if the index is too large.
     pub fn get<T: Decode>(&mut self, idx: usize) -> Result<T, Error> {
         let current = self.seek(SeekFrom::Current(0))?;
         
