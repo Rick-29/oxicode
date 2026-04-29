@@ -71,4 +71,19 @@ impl<R: Read + Seek, const ITEM_SIZE: usize, C: Config> FlatDecoder<R, ITEM_SIZE
     pub fn seek(&mut self, from: SeekFrom) -> Result<u64, Error> {
         Ok(self.reader.seek(from)?)
     }
+
+    /// To not get errors
+    pub fn get<T: Decode>(&mut self, idx: usize) -> Result<T, LoaderError> {
+        let current = self.seek(SeekFrom::Current(0))?;
+        
+        self.seek(SeekFrom::Start((idx * ITEM_SIZE) as u64))?;
+        self.read_item()?.ok_or_else(|| LoaderError::Decode(format!("Unexpected end of file at index {}", idx)))
+
+        // seek back to original position
+        .and_then(|item| {
+            self.seek(SeekFrom::Start(current))?;
+            Ok(item)
+        })
+    }
+
 }
